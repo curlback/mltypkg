@@ -87,6 +87,12 @@ get_pkg_manager() {
 create_project() {
     get_pkg_manager
 
+    # Check if the package manager is installed
+    if ! command -v $pkg_manager &> /dev/null; then
+        echo "$pkg_manager is not installed. Please install it and try again." >&2
+        exit 1
+    fi
+
     echo "Using package manager: $pkg_manager"
     echo "Running a quick joke to lighten the mood..."
     fetch_joke
@@ -123,6 +129,12 @@ create_project() {
 development_mode() {
     get_pkg_manager
 
+    # Check if the package manager is installed
+    if ! command -v $pkg_manager &> /dev/null; then
+        echo "$pkg_manager is not installed. Please install it and try again." >&2
+        exit 1
+    fi
+
     echo "Starting development mode with $pkg_manager"
     fetch_joke
 
@@ -139,6 +151,12 @@ development_mode() {
 
 build_project() {
     get_pkg_manager
+
+    # Check if the package manager is installed
+    if ! command -v $pkg_manager &> /dev/null; then
+        echo "$pkg_manager is not installed. Please install it and try again." >&2
+        exit 1
+    fi
 
     echo "Building project with $pkg_manager"
     fetch_joke
@@ -159,6 +177,12 @@ add_package() {
     local cmd="$1"
     shift
     get_pkg_manager
+
+    # Check if the package manager is installed
+    if ! command -v $pkg_manager &> /dev/null; then
+        echo "$pkg_manager is not installed. Please install it and try again." >&2
+        exit 1
+    fi
 
     echo "Using package manager: $pkg_manager"
     fetch_joke
