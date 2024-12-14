@@ -2,59 +2,106 @@
 
 # mltypkg - Multi Package Manager CLI
 
-# Function to detect the package manager
+# Array of programmer-related jokes
+jokes=(
+    "Why do programmers prefer dark mode? Because light attracts bugs!"
+    "How many programmers does it take to change a light bulb? None, that's a hardware problem."
+    "Why do Java developers wear glasses? Because they don’t C#!"
+    "What is a programmer's favorite hangout place? Foo Bar."
+    "There are 10 types of people in the world: those who understand binary and those who don’t."
+)
+
+# Function to fetch a random joke
+fetch_joke() {
+    echo "${jokes[RANDOM % ${#jokes[@]}]}"
+}
+
+# Function to detect installed package managers
+list_installed_pkg_managers() {
+    local available_pkg_managers=()
+    for manager in npx npm pnpm yarn bun; do
+        if command -v $manager &> /dev/null; then
+            available_pkg_managers+=("$manager")
+        fi
+    done
+    echo "${available_pkg_managers[@]}"
+}
+
+# Function to ask the user for a package manager
 get_pkg_manager() {
     echo "Which package manager would you like to use?"
-    echo "1) npx"
-    echo "2) yarn"
-    echo "3) pnpm"
-    echo "4) npm"
-    echo "5) bun"
-    read -p "Enter the number corresponding to your choice: " choice
+    options=("npm" "pnpm" "yarn" "bun" "npx" "Default (first installed)")
 
-    case $choice in
-        1)
-            pkg_manager="npx";;
-        2)
-            pkg_manager="yarn";;
-        3)
-            pkg_manager="pnpm";;
-        4)
-            pkg_manager="npm";;
-        5)
-            pkg_manager="bun";;
-        *)
-            echo "Invalid choice. Defaulting to npx." >&2
-            pkg_manager="npx";;
-    esac
+    select choice in "${options[@]}"; do
+        case $choice in
+            "npm")
+                echo "You chose npm!"
+                pkg_manager="npm"
+                break
+                ;;
+            "npx")
+                echo "You chose npx!"
+                pkg_manager="npx"
+                break
+                ;;
+            "pnpm")
+                echo "You chose pnpm!"
+                pkg_manager="pnpm"
+                break
+                ;;
+            "yarn")
+                echo "You chose yarn!"
+                pkg_manager="yarn"
+                break
+                ;;
+            "bun")
+                echo "You chose bun!"
+                pkg_manager="bun"
+                break
+                ;;
+            "Default (first installed)")
+                # Detect installed package managers if "Default" is selected
+                local installed_managers=( $(list_installed_pkg_managers) )
 
-    # Check if the chosen package manager is installed
-    if ! command -v $pkg_manager &> /dev/null; then
-        echo "$pkg_manager is not installed. Installing..."
-        if command -v npm &> /dev/null; then
-            npm install -g $pkg_manager
-        else
-            echo "Error: npm is required to install $pkg_manager." >&2
-            exit 1
-        fi
-    fi
+                if [ ${#installed_managers[@]} -eq 0 ]; then
+                    echo "No package managers detected on your system. Exiting." >&2
+                    exit 1
+                fi
 
-    echo "$pkg_manager"
+                echo "Defaulting to the first installed package manager: ${installed_managers[0]}"
+                pkg_manager="${installed_managers[0]}"
+                break
+                ;;
+            *)
+                echo "Invalid choice. Please choose a valid option."
+                ;;
+        esac
+    done
+
+    # Always show a joke after the user's choice
+    echo "Here's a joke to lighten the mood:"
+    fetch_joke
 }
 
 # Function to create a new project
 create_project() {
-    local cmd="$1"
-    shift
-    local pkg_manager=$(get_pkg_manager)
+    get_pkg_manager
 
     echo "Using package manager: $pkg_manager"
     echo "Running a quick joke to lighten the mood..."
-    echo "Why do programmers prefer dark mode? Because light attracts bugs!"
+    fetch_joke
+
+    local cmd="$1"
+    shift
 
     case $pkg_manager in
-        npx|npm)
+        npx)
+            # npx is used to execute commands directly
             $pkg_manager $cmd "$@"
+            ;;
+        npm)
+            # npm create is used to create a project (npm init)
+            $pkg_manager create "$cmd" "$@"
             ;;
         yarn)
             $pkg_manager create "$cmd" "$@"
@@ -74,10 +121,10 @@ create_project() {
 
 # Function to run project commands
 development_mode() {
-    local pkg_manager=$(get_pkg_manager)
+    get_pkg_manager
 
     echo "Starting development mode with $pkg_manager"
-    echo "Why do Java developers wear glasses? Because they don’t C#!"
+    fetch_joke
 
     case $pkg_manager in
         npm|npx|pnpm|yarn|bun)
@@ -91,10 +138,10 @@ development_mode() {
 }
 
 build_project() {
-    local pkg_manager=$(get_pkg_manager)
+    get_pkg_manager
 
     echo "Building project with $pkg_manager"
-    echo "There are 10 types of people in the world: those who understand binary and those who don’t."
+    fetch_joke
 
     case $pkg_manager in
         npm|npx|pnpm|yarn|bun)
@@ -111,16 +158,17 @@ build_project() {
 add_package() {
     local cmd="$1"
     shift
-    local pkg_manager=$(get_pkg_manager)
+    get_pkg_manager
 
     echo "Using package manager: $pkg_manager"
-    echo "Here’s a quick one: Debugging is like being the detective in a crime movie where you are also the murderer."
+    fetch_joke
 
     case $pkg_manager in
-        npx|pnpm|bun)
-            $pkg_manager dlx $cmd "$@"
+        npx)
+            # npx is used for executing binaries without installing them
+            $pkg_manager $cmd "$@"
             ;;
-        yarn)
+        pnpm|bun|yarn)
             $pkg_manager dlx $cmd "$@"
             ;;
         npm)
